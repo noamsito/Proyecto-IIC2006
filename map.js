@@ -9,7 +9,6 @@ const map = L.map('map', {
 
 map.setMinZoom(2);
 
-// Agregar título al mapa con estilo llamativo
 const title = L.control({ position: 'topleft' });
 title.onAdd = function () {
   const div = L.DomUtil.create('div', 'map-title');
@@ -67,7 +66,6 @@ function onEachFeature(feature, layer) {
   layer.bindPopup(`<b>${pais}</b><br>Conflictos: ${conflictos}`);
 }
 
-// Agregar índice de colores
 const legend = L.control({ position: 'bottomleft' });
 legend.onAdd = function () {
   const div = L.DomUtil.create('div', 'info legend');
