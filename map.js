@@ -73,17 +73,30 @@ legend.onAdd = function () {
   const div = L.DomUtil.create('div', 'info legend');
   const grades = [0, 1, 5, 10, 15, 20];
 
-  div.innerHTML = `
-    <div style="background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 8px;">
-      <strong>Conflictos</strong><br>
-      ${grades.map((grade, i) => `
-        <div style="display: flex; align-items: center; margin-bottom: 5px;">
-          <i style="background:${getColor(grade + 1)}; width: 18px; height: 18px; display: inline-block; margin-right: 8px;"></i>
-          ${grade}${grades[i + 1] ? '&ndash;' + grades[i + 1] : '+'}
-        </div>
-      `).join('')}
-    </div>
-  `;
+  let legendContent = '<div style="background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12px;">';
+  legendContent += '<strong>Conflictos</strong><br>';
+
+  for (let i = 0; i < grades.length; i++) {
+    const from = grades[i];
+    const to = grades[i + 1];
+
+    legendContent += `
+      <div style="margin-bottom: 5px; display: flex; align-items: center;">
+      <span style="
+        display: inline-block; 
+        width: 16px; 
+        height: 16px; 
+        background-color: ${getColor(from)}; 
+        margin-right: 8px; 
+        border: 1px solid #ccc;">
+      </span>
+      ${from}${to ? (from === 0 && to - 1 === 0 ? '' : `&ndash;${to - 1}`) : '+'}
+      </div>
+    `;
+  }
+
+  legendContent += '</div>';
+  div.innerHTML = legendContent;
   return div;
 };
 legend.addTo(map);
