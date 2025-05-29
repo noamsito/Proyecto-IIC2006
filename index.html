@@ -1,19 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mapa de Conflictos Bélicos</title>
+  <title>Mapa de Conflictos Bélicos (1945-2023)</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    #map { height: 100vh; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="map.css">
 </head>
 <body>
+  <!-- Header mejorado con contexto claro -->
+  <div class="map-header">
+    <h1>🌍 Conflictos Bélicos Mundiales</h1>
+    <div class="subtitle">Distribución geográfica de conflictos armados (1945-2023)</div>
+  </div>
+
+  <!-- Panel de controles -->
+  <div class="controls-panel">
+    <h3>Filtros y Controles</h3>
+    
+    <div class="filter-control">
+      <label for="minConflicts">Mostrar países con mínimo:</label>
+      <input type="range" id="minConflicts" class="range-input" min="0" max="25" value="0" step="1">
+      <div class="range-display" id="minConflictsDisplay">0 conflictos</div>
+    </div>
+    
+    <div class="sound-control">
+      <label>Sonificación</label>
+      <div class="toggle-switch active" id="soundToggle"></div>
+    </div>
+  </div>
+
+  <!-- Panel de información y leyenda -->
+  <div class="info-panel">
+    <h3>Leyenda</h3>
+    <div id="legendContent"></div>
+    
+    <div class="stats-panel">
+      <div class="stat-item">
+        <span class="stat-label">Países con datos:</span>
+        <span class="stat-value" id="totalCountries">-</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Países visibles:</span>
+        <span class="stat-value" id="visibleCountries">-</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Conflictos totales:</span>
+        <span class="stat-value" id="totalConflicts">-</span>
+      </div>
+    </div>
+    
+  </div>
+
   <div id="map"></div>
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-ajax"></script>
   <script src="data.js"></script>
+  <script src="sounds.js"></script>
   <script src="map.js"></script>
 </body>
 </html>
