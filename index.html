@@ -7,6 +7,109 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="map.css">
+  <style>
+    /* Estilos adicionales para controles Arduino */
+    .arduino-panel {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .arduino-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .arduino-btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .arduino-btn.primary {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .arduino-btn.secondary {
+      background: #6b7280;
+      color: white;
+    }
+    
+    .arduino-btn.danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .arduino-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .arduino-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .connection-status {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .connection-status.connected {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .connection-status.disconnected {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+    
+    .arduino-status {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 10px;
+      height: 100px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+    
+    .status-line {
+      margin-bottom: 2px;
+    }
+    
+    .connection-error {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      z-index: 10000;
+      max-width: 300px;
+      font-size: 13px;
+    }
+  </style>
 </head>
 <body>
   <div class="map-header">
@@ -26,6 +129,24 @@
     <div class="sound-control">
       <label>Sonificación</label>
       <div class="toggle-switch active" id="soundToggle"></div>
+    </div>
+
+    <!-- Panel de controles Arduino -->
+    <div class="arduino-panel">
+      <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;">🔧 Control Arduino</h4>
+      
+      <div id="arduinoConnectionStatus" class="connection-status disconnected">
+        ❌ Arduino Desconectado
+      </div>
+      
+      <div class="arduino-controls">
+        <button id="connectArduino" class="arduino-btn primary">Conectar</button>
+        <button id="disconnectArduino" class="arduino-btn secondary" disabled>Desconectar</button>
+        <button id="resetServo" class="arduino-btn danger" disabled>Reset Servo</button>
+        <button id="statusArduino" class="arduino-btn secondary" disabled>Estado</button>
+      </div>
+      
+      <div id="arduinoStatus" class="arduino-status"></div>
     </div>
   </div>
 
@@ -47,7 +168,14 @@
         <span class="stat-value" id="totalConflicts">-</span>
       </div>
     </div>
-    
+
+    <div class="source-info">
+      <strong>Instrucciones:</strong><br>
+      1. Conecta tu Arduino Leonardo al puerto USB<br>
+      2. Haz clic en "Conectar" y selecciona el puerto COM<br>
+      3. Haz clic en cualquier país para mover el servo<br>
+      4. El servo se posicionará según el nivel de conflictos
+    </div>
   </div>
 
   <div id="map"></div>
@@ -55,6 +183,7 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="data.js"></script>
   <script src="sounds.js"></script>
+  <script src="arduino-communication.js"></script>
   <script src="map.js"></script>
 </body>
 </html>

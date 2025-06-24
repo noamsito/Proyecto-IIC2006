@@ -1,3 +1,4 @@
+// map.js - Versión actualizada con integración Arduino
 const map = L.map("map", {
   maxBounds: [[-90, -180], [90, 180]],
   maxBoundsViscosity: 1.0,
@@ -55,15 +56,27 @@ function onEachCountry(feature, layer) {
       <strong>Conflictos registrados:</strong> ${conflicts}<br>
       <strong>Nivel de intensidad:</strong> ${getIntensityLabel(conflicts)}
     </div>
-    ${soundSystem.enabled ? '<div class="popup-sound-info">💭 Haga clic para escuchar la sonificación</div>' : ''}
+    ${soundSystem.enabled ? '<div class="popup-sound-info">🔊 Haga clic para escuchar la sonificación</div>' : ''}
+    ${arduinoController && arduinoController.isConnected ? '<div class="popup-arduino-info">🔧 Servo se moverá según nivel de conflictos</div>' : ''}
   `;
   
   layer.bindPopup(popupContent);
   
   layer.on({
-    click: () => {
+    click: async () => {
       if (conflicts >= currentMinFilter) {
+        // Reproducir sonido
         soundSystem.play(conflicts);
+        
+        // Enviar comando al Arduino si está conectado
+        if (arduinoController && arduinoController.isConnected) {
+          try {
+            await arduinoController.setConflictLevel(conflicts);
+            console.log(`Enviado nivel de conflictos ${conflicts} al Arduino`);
+          } catch (error) {
+            console.error('Error enviando datos al Arduino:', error);
+          }
+        }
       }
     },
     mouseover: (e) => {
@@ -131,6 +144,7 @@ function updateMap() {
   updateStats();
 }
 
+// Cargar datos geográficos
 fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
   .then(response => response.json())
   .then(data => {
@@ -144,6 +158,7 @@ fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/wor
   })
   .catch(error => {
     console.error('Error cargando datos geográficos:', error);
+    // Fallback a datos locales si están disponibles
     if (typeof countries !== 'undefined') {
       geoJsonLayer = L.geoJson(countries, {
         style: getCountryStyle,
@@ -154,6 +169,7 @@ fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/wor
     }
   });
 
+// Control de filtro de conflictos mínimos
 const minConflictsSlider = document.getElementById('minConflicts');
 const minConflictsDisplay = document.getElementById('minConflictsDisplay');
 
@@ -165,12 +181,65 @@ minConflictsSlider.addEventListener('input', function() {
   updateMap();
 });
 
+// Control de sonido
 const soundToggle = document.getElementById('soundToggle');
 soundToggle.addEventListener('click', function() {
   soundSystem.toggle();
   this.classList.toggle('active');
 });
 
+// Controles de Arduino
+const connectArduinoBtn = document.getElementById('connectArduino');
+const disconnectArduinoBtn = document.getElementById('disconnectArduino');
+const resetServoBtn = document.getElementById('resetServo');
+const statusArduinoBtn = document.getElementById('statusArduino');
+
+// Conectar Arduino
+connectArduinoBtn?.addEventListener('click', async () => {
+  const success = await arduinoController.connect();
+  if (success) {
+    connectArduinoBtn.disabled = true;
+    disconnectArduinoBtn.disabled = false;
+    resetServoBtn.disabled = false;
+    statusArduinoBtn.disabled = false;
+    
+    // Actualizar indicador visual
+    updateArduinoConnectionStatus(true);
+  }
+});
+
+// Desconectar Arduino
+disconnectArduinoBtn?.addEventListener('click', async () => {
+  await arduinoController.disconnect();
+  connectArduinoBtn.disabled = false;
+  disconnectArduinoBtn.disabled = true;
+  resetServoBtn.disabled = true;
+  statusArduinoBtn.disabled = true;
+  
+  // Actualizar indicador visual
+  updateArduinoConnectionStatus(false);
+});
+
+// Reset servo
+resetServoBtn?.addEventListener('click', async () => {
+  await arduinoController.resetServo();
+});
+
+// Status Arduino
+statusArduinoBtn?.addEventListener('click', async () => {
+  await arduinoController.requestStatus();
+});
+
+// Actualizar indicador de conexión Arduino
+function updateArduinoConnectionStatus(connected) {
+  const statusIndicator = document.getElementById('arduinoConnectionStatus');
+  if (statusIndicator) {
+    statusIndicator.className = connected ? 'connection-status connected' : 'connection-status disconnected';
+    statusIndicator.textContent = connected ? '🔗 Arduino Conectado' : '❌ Arduino Desconectado';
+  }
+}
+
+// Ajustar altura del mapa en dispositivos móviles
 function adjustMapHeight() {
   const header = document.querySelector('.map-header');
   const headerHeight = header ? header.offsetHeight : 0;
