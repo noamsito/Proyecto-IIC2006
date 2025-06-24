@@ -1,4 +1,3 @@
-// Inicializar mapa
 const map = L.map("map", {
   maxBounds: [[-90, -180], [90, 180]],
   maxBoundsViscosity: 1.0,
@@ -7,24 +6,21 @@ const map = L.map("map", {
 
 map.setMinZoom(2);
 
-// Capa base del mapa
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "© OpenStreetMap contributors",
 }).addTo(map);
 
-// Variables globales
 let geoJsonLayer;
 let currentMinFilter = 0;
 
-// Función para obtener color según número de conflictos
 function getColor(conflicts) {
   const colors = {
-    0: "#f1f5f9",      // Gris muy claro (sin conflictos)
-    1: "#fef3c7",      // Amarillo muy claro
-    5: "#fed7aa",      // Naranja claro  
-    10: "#fca5a5",     // Rojo claro
-    15: "#f87171",     // Rojo medio
-    20: "#dc2626"      // Rojo intenso
+    0: "#f1f5f9",       
+    1: "#fef3c7",      
+    5: "#fed7aa",      
+    10: "#fca5a5",     
+    15: "#f87171",     
+    20: "#dc2626"      
   };
   
   if (conflicts === 0) return colors[0];
@@ -35,7 +31,6 @@ function getColor(conflicts) {
   return colors[20];
 }
 
-// Función de estilo para países
 function getCountryStyle(feature) {
   const countryName = feature.properties.name || feature.properties.NAME;
   const conflicts = conflictosPorPais[countryName] || 0;
@@ -50,12 +45,10 @@ function getCountryStyle(feature) {
   };
 }
 
-// Función para eventos de cada país
 function onEachCountry(feature, layer) {
   const countryName = feature.properties.name || feature.properties.NAME;
   const conflicts = conflictosPorPais[countryName] || 0;
   
-  // Popup mejorado con más información
   const popupContent = `
     <div class="popup-header">${countryName}</div>
     <div class="popup-stats">
@@ -67,7 +60,6 @@ function onEachCountry(feature, layer) {
   
   layer.bindPopup(popupContent);
   
-  // Eventos de interacción
   layer.on({
     click: () => {
       if (conflicts >= currentMinFilter) {
@@ -91,17 +83,15 @@ function onEachCountry(feature, layer) {
   });
 }
 
-// Función auxiliar para etiquetas de intensidad
 function getIntensityLabel(conflicts) {
   if (conflicts === 0) return "Sin conflictos registrados";
-  if (conflicts < 5) return "Intensidad muy baja";
-  if (conflicts < 10) return "Intensidad baja";
-  if (conflicts < 15) return "Intensidad media";
-  if (conflicts < 20) return "Intensidad alta";
-  return "Intensidad muy alta";
+  if (conflicts < 5) return "Muy baja";
+  if (conflicts < 10) return "Baja";
+  if (conflicts < 15) return "Media";
+  if (conflicts < 20) return "Alta";
+  return "Muy alta";
 }
 
-// Actualizar leyenda
 function updateLegend() {
   const legendContent = document.getElementById('legendContent');
   const levels = [
@@ -121,7 +111,6 @@ function updateLegend() {
   `).join('');
 }
 
-// Actualizar estadísticas
 function updateStats() {
   const totalCountries = Object.keys(conflictosPorPais).length;
   const visibleCountries = Object.values(conflictosPorPais).filter(c => c >= currentMinFilter).length;
@@ -132,7 +121,6 @@ function updateStats() {
   document.getElementById('totalConflicts').textContent = totalConflicts;
 }
 
-// Función para actualizar el mapa según filtros
 function updateMap() {
   if (geoJsonLayer) {
     geoJsonLayer.eachLayer(layer => {
@@ -143,7 +131,6 @@ function updateMap() {
   updateStats();
 }
 
-// Cargar datos geográficos
 fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
   .then(response => response.json())
   .then(data => {
@@ -157,7 +144,6 @@ fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/wor
   })
   .catch(error => {
     console.error('Error cargando datos geográficos:', error);
-    // Fallback a datos locales si están disponibles
     if (typeof countries !== 'undefined') {
       geoJsonLayer = L.geoJson(countries, {
         style: getCountryStyle,
@@ -168,7 +154,6 @@ fetch("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/wor
     }
   });
 
-// Controles de filtro
 const minConflictsSlider = document.getElementById('minConflicts');
 const minConflictsDisplay = document.getElementById('minConflictsDisplay');
 
@@ -180,14 +165,12 @@ minConflictsSlider.addEventListener('input', function() {
   updateMap();
 });
 
-// Control de sonido
 const soundToggle = document.getElementById('soundToggle');
 soundToggle.addEventListener('click', function() {
   soundSystem.toggle();
   this.classList.toggle('active');
 });
 
-// Ajustar altura del mapa en dispositivos móviles
 function adjustMapHeight() {
   const header = document.querySelector('.map-header');
   const headerHeight = header ? header.offsetHeight : 0;
@@ -201,6 +184,5 @@ function adjustMapHeight() {
   }
 }
 
-// Ejecutar al cargar y redimensionar
 window.addEventListener('load', adjustMapHeight);
 window.addEventListener('resize', adjustMapHeight);

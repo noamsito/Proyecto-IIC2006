@@ -1,4 +1,3 @@
-// Sistema de sonificación mejorado
 const soundSystem = {
   currentAudio: null,
   enabled: true,
@@ -23,8 +22,7 @@ const soundSystem = {
   
   play(level) {
     if (!this.enabled) return;
-    
-    // Detener audio actual si existe
+
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
@@ -34,13 +32,12 @@ const soundSystem = {
     this.currentAudio = new Audio(soundUrl);
     this.currentAudio.volume = 0.3; // Volumen reducido
     
-    // Limitar duración a 3-4 segundos
     this.currentAudio.addEventListener('loadedmetadata', () => {
       const maxDuration = 4;
       if (this.currentAudio.duration > maxDuration) {
         setTimeout(() => {
           if (this.currentAudio) {
-            this.currentAudio.pause();
+            this.currentAudio.restart();
           }
         }, maxDuration * 1000);
       }
